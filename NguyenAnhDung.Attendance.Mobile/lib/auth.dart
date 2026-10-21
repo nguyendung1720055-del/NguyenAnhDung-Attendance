@@ -291,9 +291,9 @@ class _AuthScreenState extends State<AuthScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 36),
+                      const SizedBox(height: 24),
                       Container(
-                        padding: const EdgeInsets.fromLTRB(22, 24, 22, 12),
+                        padding: const EdgeInsets.fromLTRB(22, 20, 22, 8),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(28),
@@ -540,16 +540,20 @@ class _AuthScreenState extends State<AuthScreen> {
                       onPressed: busy ? null : resend,
                       child: const Text('Gửi lại mã xác thực'),
                     ),
-                  if (mode == 'login') ...[
-                    TextButton(
-                      onPressed: busy ? null : () => change('register'),
-                      child: const Text('Chưa có tài khoản? Đăng ký'),
+                  if (mode == 'login')
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      children: [
+                        TextButton(
+                          onPressed: busy ? null : () => change('register'),
+                          child: const Text('Chưa có tài khoản? Đăng ký'),
+                        ),
+                        TextButton(
+                          onPressed: busy ? null : () => change('verify'),
+                          child: const Text('Đã có mã xác thực email'),
+                        ),
+                      ],
                     ),
-                    TextButton(
-                      onPressed: busy ? null : () => change('verify'),
-                      child: const Text('Đã có mã xác thực email'),
-                    ),
-                  ],
                   if (mode != 'login')
                     TextButton.icon(
                       onPressed: busy ? null : () => change('login'),
