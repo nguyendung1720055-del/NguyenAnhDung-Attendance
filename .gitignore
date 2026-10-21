@@ -1,0 +1,38 @@
+# Machine tools and build output
+.tools/
+**/bin/
+**/obj/
+**/build/
+**/.dart_tool/
+**/.flutter-plugins*
+**/.gradle/
+**/Pods/
+**/.symlinks/
+**/DerivedData/
+**/local.properties
+**/Generated.xcconfig
+**/flutter_export_environment.sh
+
+# Local secrets and IDE settings
+.env
+.env.*
+!.env.example
+**/appsettings.Local.json
+**/appsettings.*.Local.json
+**/Properties/launchSettings.Local.json
+**/*.user
+**/*.suo
+.vs/
+.idea/
+*.keystore
+*.jks
+**/key.properties
+**/secrets.json
+
+# Test artifacts
+TestResults/
+**/coverage/
+*.log
+*.zip
+*.apk
+*.aab
