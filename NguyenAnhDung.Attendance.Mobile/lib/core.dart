@@ -8,6 +8,19 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
 typedef Json = Map<String, dynamic>;
+
+const brandPrimary = Color(0xFF2455D6);
+const brandDeep = Color(0xFF14389F);
+const brandInk = Color(0xFF14213D);
+const brandMuted = Color(0xFF66738F);
+const appBackground = Color(0xFFF3F6FC);
+const borderColor = Color(0xFFE3E8F2);
+const brandGradient = LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [brandDeep, brandPrimary, Color(0xFF4F8BFF)],
+);
+
 const defaultBaseUrl = String.fromEnvironment(
   'API_BASE_URL',
   defaultValue: 'http://10.0.2.2:5080/api',
@@ -192,28 +205,92 @@ Future<bool> confirm(
     ) ??
     false;
 
+String initials(dynamic name) {
+  final parts = '${name ?? ''}'
+      .trim()
+      .split(RegExp(r'\s+'))
+      .where((p) => p.isNotEmpty)
+      .toList();
+  if (parts.isEmpty) return '?';
+  final first = parts.length > 1 ? parts[parts.length - 2][0] : '';
+  return (first + parts.last[0]).toUpperCase();
+}
+
+class BrandLogo extends StatelessWidget {
+  final double size;
+  const BrandLogo({super.key, this.size = 52});
+  @override
+  Widget build(BuildContext context) => Container(
+    width: size,
+    height: size,
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(size * .3),
+      boxShadow: const [
+        BoxShadow(color: Color(0x33000000), blurRadius: 18, offset: Offset(0, 8)),
+      ],
+    ),
+    child: Icon(Icons.fingerprint, color: brandPrimary, size: size * .62),
+  );
+}
+
+class IconBadge extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final double size;
+  const IconBadge(this.icon, {super.key, this.color = brandPrimary, this.size = 44});
+  @override
+  Widget build(BuildContext context) => Container(
+    width: size,
+    height: size,
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: .12),
+      borderRadius: BorderRadius.circular(size * .32),
+    ),
+    child: Icon(icon, color: color, size: size * .52),
+  );
+}
+
+class _StatePanel extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String message;
+  final Widget? action;
+  const _StatePanel(this.icon, this.color, this.message, [this.action]);
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconBadge(icon, color: color, size: 72),
+          const SizedBox(height: 16),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: brandMuted, height: 1.4),
+          ),
+          if (action != null) ...[const SizedBox(height: 16), action!],
+        ],
+      ),
+    ),
+  );
+}
+
 class ErrorPanel extends StatelessWidget {
   final Object error;
   final VoidCallback retry;
   const ErrorPanel({super.key, required this.error, required this.retry});
   @override
-  Widget build(BuildContext context) => Center(
-    child: Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.cloud_off_rounded, size: 48, color: Colors.blueGrey),
-          const SizedBox(height: 12),
-          Text('$error', textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          OutlinedButton.icon(
-            onPressed: retry,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Thử lại'),
-          ),
-        ],
-      ),
+  Widget build(BuildContext context) => _StatePanel(
+    Icons.cloud_off_rounded,
+    Colors.deepOrange,
+    '$error',
+    OutlinedButton.icon(
+      onPressed: retry,
+      icon: const Icon(Icons.refresh),
+      label: const Text('Thử lại'),
     ),
   );
 }
@@ -222,19 +299,8 @@ class EmptyPanel extends StatelessWidget {
   final String message;
   const EmptyPanel(this.message, {super.key});
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.all(32),
-    child: Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.inbox_outlined, size: 46, color: Colors.blueGrey),
-          const SizedBox(height: 12),
-          Text(message, textAlign: TextAlign.center),
-        ],
-      ),
-    ),
-  );
+  Widget build(BuildContext context) =>
+      _StatePanel(Icons.inbox_outlined, brandMuted, message);
 }
 
 class DataPage extends StatefulWidget {
@@ -292,15 +358,18 @@ class SectionTitle extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: Theme.of(context).textTheme.headlineSmall
-                    ?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: brandInk,
+                  letterSpacing: -.2,
+                ),
               ),
               if (subtitle != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
                     subtitle!,
-                    style: const TextStyle(color: Colors.blueGrey),
+                    style: const TextStyle(color: brandMuted),
                   ),
                 ),
             ],
@@ -327,9 +396,26 @@ class StatusPill extends StatelessWidget {
       color: color.withValues(alpha: .10),
       borderRadius: BorderRadius.circular(20),
     ),
-    child: Text(
-      text,
-      style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 6,
+          height: 6,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 6),
+        Flexible(
+          child: Text(
+            text,
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
     ),
   );
 }

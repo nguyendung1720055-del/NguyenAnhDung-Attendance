@@ -249,6 +249,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   )
                 : null,
           ),
+          if (!completed) _progress(checkout),
           if (completed)
             const Card(
               child: Padding(
@@ -341,6 +342,42 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       );
     },
   );
+  Widget _progress(bool checkout) {
+    final steps = [
+      if (!checkout) qrToken != null,
+      position != null,
+      motionScore != null,
+    ];
+    final done = steps.where((s) => s).length;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            done == steps.length
+                ? 'Đã sẵn sàng xác nhận'
+                : 'Hoàn thành $done/${steps.length} bước',
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              color: done == steps.length ? Colors.teal : brandMuted,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: done / steps.length,
+              minHeight: 8,
+              backgroundColor: borderColor,
+              color: done == steps.length ? Colors.teal : brandPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _step(
     String number,
     String title,
@@ -352,6 +389,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     bool disabled = false,
   }) => Card(
     margin: const EdgeInsets.only(bottom: 12),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20),
+      side: BorderSide(
+        color: ready ? Colors.teal.withValues(alpha: .45) : borderColor,
+        width: ready ? 1.5 : 1,
+      ),
+    ),
     child: Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -359,34 +403,53 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         children: [
           Row(
             children: [
-              CircleAvatar(
-                backgroundColor: ready
-                    ? Colors.teal.withValues(alpha: .1)
-                    : Theme.of(context).colorScheme.primaryContainer,
-                child: ready
-                    ? const Icon(Icons.check, color: Colors.teal)
-                    : Text(number),
-              ),
+              ready
+                  ? const IconBadge(Icons.check_rounded, color: Colors.teal)
+                  : IconBadge(icon),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'BƯỚC $number',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        letterSpacing: 1.2,
+                        fontWeight: FontWeight.w700,
+                        color: brandMuted,
+                      ),
+                    ),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: brandInk,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
           const SizedBox(height: 14),
-          Text(subtitle, style: const TextStyle(color: Colors.blueGrey)),
-          const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: disabled ? null : action,
-            icon: Icon(icon),
-            label: Text(label),
+          Text(
+            subtitle,
+            style: const TextStyle(color: brandMuted, height: 1.4),
           ),
+          const SizedBox(height: 12),
+          ready
+              ? OutlinedButton.icon(
+                  onPressed: disabled ? null : action,
+                  icon: Icon(icon),
+                  label: Text(label),
+                )
+              : FilledButton.tonalIcon(
+                  onPressed: disabled ? null : action,
+                  icon: Icon(icon),
+                  label: Text(label),
+                ),
         ],
       ),
     ),

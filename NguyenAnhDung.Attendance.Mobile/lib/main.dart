@@ -42,29 +42,164 @@ class _AttendanceAppState extends State<AttendanceApp> {
       locale: const Locale('vi', 'VN'),
       supportedLocales: const [Locale('vi', 'VN'), Locale('en', 'US')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2455D6)),
-        scaffoldBackgroundColor: const Color(0xFFF4F6FB),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-        ),
-        cardTheme: CardThemeData(
-          color: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-        ),
-        appBarTheme: const AppBarTheme(backgroundColor: Color(0xFFF4F6FB)),
-      ),
+      theme: buildTheme(),
       home: session.loading
-          ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+          ? const SplashScreen()
           : session.user == null
           ? AuthScreen(session: session)
           : HomeScreen(session: session),
+    ),
+  );
+}
+
+ThemeData buildTheme() {
+  final scheme = ColorScheme.fromSeed(
+    seedColor: brandPrimary,
+    primary: brandPrimary,
+    surface: Colors.white,
+  );
+  final rounded = RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(14),
+  );
+  OutlineInputBorder outline(Color color, [double width = 1]) =>
+      OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: color, width: width),
+      );
+  return ThemeData(
+    useMaterial3: true,
+    colorScheme: scheme,
+    scaffoldBackgroundColor: appBackground,
+    visualDensity: VisualDensity.standard,
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: const Color(0xFFF7F9FD),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      prefixIconColor: brandMuted,
+      border: outline(borderColor),
+      enabledBorder: outline(borderColor),
+      focusedBorder: outline(brandPrimary, 1.6),
+      errorBorder: outline(scheme.error),
+      focusedErrorBorder: outline(scheme.error, 1.6),
+    ),
+    cardTheme: CardThemeData(
+      color: Colors.white,
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: borderColor),
+      ),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        minimumSize: const Size(0, 48),
+        shape: rounded,
+        textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size(0, 44),
+        shape: rounded,
+        side: const BorderSide(color: borderColor),
+        textStyle: const TextStyle(fontWeight: FontWeight.w600),
+      ),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        shape: rounded,
+        textStyle: const TextStyle(fontWeight: FontWeight.w600),
+      ),
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: appBackground,
+      surfaceTintColor: Colors.transparent,
+      scrolledUnderElevation: 0,
+      centerTitle: false,
+      titleTextStyle: TextStyle(
+        color: brandInk,
+        fontSize: 19,
+        fontWeight: FontWeight.w800,
+      ),
+    ),
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      elevation: 8,
+      shadowColor: Colors.black26,
+      indicatorColor: scheme.primaryContainer,
+      labelTextStyle: WidgetStateProperty.resolveWith(
+        (states) => TextStyle(
+          fontSize: 12,
+          fontWeight: states.contains(WidgetState.selected)
+              ? FontWeight.w700
+              : FontWeight.w500,
+        ),
+      ),
+    ),
+    navigationRailTheme: NavigationRailThemeData(
+      backgroundColor: Colors.white,
+      indicatorColor: scheme.primaryContainer,
+    ),
+    tabBarTheme: TabBarThemeData(
+      labelStyle: const TextStyle(fontWeight: FontWeight.w700),
+      dividerColor: borderColor,
+      indicatorSize: TabBarIndicatorSize.label,
+    ),
+    dialogTheme: DialogThemeData(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+    ),
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      showDragHandle: true,
+    ),
+    snackBarTheme: SnackBarThemeData(
+      backgroundColor: brandInk,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    ),
+    chipTheme: ChipThemeData(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      side: const BorderSide(color: borderColor),
+    ),
+  );
+}
+
+class SplashScreen extends StatelessWidget {
+  const SplashScreen({super.key});
+  @override
+  Widget build(BuildContext context) => const Scaffold(
+    body: DecoratedBox(
+      decoration: BoxDecoration(gradient: brandGradient),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            BrandLogo(size: 72),
+            SizedBox(height: 20),
+            Text(
+              'Chấm công Hữu Duyên',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            SizedBox(height: 24),
+            SizedBox(
+              width: 28,
+              height: 28,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2.5,
+              ),
+            ),
+          ],
+        ),
+      ),
     ),
   );
 }

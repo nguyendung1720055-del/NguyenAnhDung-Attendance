@@ -224,86 +224,154 @@ class _AuthScreenState extends State<AuthScreen> {
         : otp
         ? 'Xác nhận đăng nhập'
         : 'Chào ngày làm việc mới';
+    final icon = register
+        ? Icons.person_add_alt_1_rounded
+        : verify
+        ? Icons.mark_email_read_outlined
+        : otp
+        ? Icons.shield_outlined
+        : Icons.waving_hand_outlined;
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 440),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
+      body: Stack(
+        children: [
+          Container(
+            height: 300,
+            decoration: const BoxDecoration(
+              gradient: brandGradient,
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(36)),
+            ),
+          ),
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 440),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Icon(
-                          Icons.fingerprint,
-                          color: Colors.white,
-                          size: 32,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Chấm công',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 23,
-                              ),
+                      Row(
+                        children: [
+                          const BrandLogo(size: 52),
+                          const SizedBox(width: 14),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Chấm công',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 23,
+                                  ),
+                                ),
+                                Text(
+                                  'HỮU DUYÊN',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    letterSpacing: 2,
+                                    color: Colors.white70,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
-                            Text(
-                              'HỮU DUYÊN',
-                              style: TextStyle(
-                                fontSize: 11,
-                                letterSpacing: 1.4,
-                                color: Colors.blueGrey,
-                              ),
+                          ),
+                          IconButton.filledTonal(
+                            tooltip: 'Cấu hình API',
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.white24,
+                              foregroundColor: Colors.white,
+                            ),
+                            onPressed: busy
+                                ? null
+                                : () => apiSettings(context, widget.session),
+                            icon: const Icon(Icons.settings_outlined),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 36),
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(22, 24, 22, 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(28),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x1A14213D),
+                              blurRadius: 30,
+                              offset: Offset(0, 14),
                             ),
                           ],
                         ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Row(
+                              children: [
+                                IconBadge(icon),
+                                const Spacer(),
+                                if (mode == 'login' || otp)
+                                  _LoginSteps(otp: otp),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              title,
+                              style: Theme.of(context).textTheme.headlineSmall
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    color: brandInk,
+                                  ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              otp
+                                  ? 'Nhập mã gửi đến ${challenge?['maskedEmail']}. Hết hạn: ${localTime(challenge?['expiresAtUtc'])} (UTC+7).'
+                                  : verify
+                                  ? 'Mã xác thực được gửi đến email của bạn.'
+                                  : register
+                                  ? 'Đăng ký bằng email, xác thực mã để kích hoạt tài khoản.'
+                                  : 'Quản lý thời gian, kết nối đội ngũ.',
+                              style: const TextStyle(
+                                color: brandMuted,
+                                height: 1.4,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            if (widget.session.notice != null &&
+                                mode == 'login')
+                              _Banner(
+                                widget.session.notice!,
+                                Colors.deepOrange,
+                                Icons.info_outline,
+                              ),
+                            _form(context, register, verify, otp),
+                          ],
+                        ),
                       ),
-                      IconButton(
-                        tooltip: 'Cấu hình API',
-                        onPressed: busy
-                            ? null
-                            : () => apiSettings(context, widget.session),
-                        icon: const Icon(Icons.settings_outlined),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Nhóm Hữu Duyên • Ứng dụng chấm công nhân viên',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: brandMuted, fontSize: 12),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 42),
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.headlineMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    otp
-                        ? 'Nhập mã gửi đến ${challenge?['maskedEmail']}. Hết hạn: ${localTime(challenge?['expiresAtUtc'])} (UTC+7).'
-                        : verify
-                        ? 'Mã xác thực được gửi đến email của bạn.'
-                        : 'Quản lý thời gian, kết nối đội ngũ.',
-                    style: const TextStyle(color: Colors.blueGrey),
-                  ),
-                  const SizedBox(height: 28),
-                  if (widget.session.notice != null && mode == 'login')
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Text(
-                        widget.session.notice!,
-                        style: const TextStyle(color: Colors.deepOrange),
-                      ),
-                    ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _form(BuildContext context, bool register, bool verify, bool otp) =>
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
                   Form(
                     key: form,
                     child: Column(
@@ -414,6 +482,12 @@ class _AuthScreenState extends State<AuthScreen> {
                               FilteringTextInputFormatter.digitsOnly,
                               LengthLimitingTextInputFormatter(6),
                             ],
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 10,
+                            ),
                             decoration: const InputDecoration(
                               labelText: 'Mã gồm 6 chữ số',
                               prefixIcon: Icon(Icons.password_outlined),
@@ -426,26 +500,16 @@ class _AuthScreenState extends State<AuthScreen> {
                           const SizedBox(height: 16),
                         ],
                         if (error != null)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 14),
-                            child: Text(
-                              error!,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.error,
-                              ),
-                            ),
+                          _Banner(
+                            error!,
+                            Theme.of(context).colorScheme.error,
+                            Icons.error_outline,
                           ),
                         if (info != null)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 14),
-                            child: Text(
-                              info!,
-                              style: const TextStyle(color: Colors.teal),
-                            ),
-                          ),
+                          _Banner(info!, Colors.teal, Icons.check_circle_outline),
                         SizedBox(
                           width: double.infinity,
-                          height: 52,
+                          height: 54,
                           child: FilledButton(
                             onPressed: busy ? null : submit,
                             child: busy
@@ -487,22 +551,86 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                   ],
                   if (mode != 'login')
-                    TextButton(
+                    TextButton.icon(
                       onPressed: busy ? null : () => change('login'),
-                      child: const Text('Quay lại đăng nhập'),
+                      icon: const Icon(Icons.arrow_back, size: 18),
+                      label: const Text('Quay lại đăng nhập'),
                     ),
-                  const SizedBox(height: 28),
-                  const Text(
-                    'Nhóm Hữu Duyên',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.blueGrey, fontSize: 12),
+        ],
+      );
+}
+
+class _LoginSteps extends StatelessWidget {
+  final bool otp;
+  const _LoginSteps({required this.otp});
+  @override
+  Widget build(BuildContext context) {
+    Widget dot(String number, String label, bool active, bool done) => Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CircleAvatar(
+          radius: 11,
+          backgroundColor: active || done ? brandPrimary : borderColor,
+          child: done
+              ? const Icon(Icons.check, size: 14, color: Colors.white)
+              : Text(
+                  number,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: active ? Colors.white : brandMuted,
                   ),
-                ],
-              ),
-            ),
+                ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: active ? brandInk : brandMuted,
           ),
         ),
-      ),
+      ],
+    );
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        dot('1', 'Mật khẩu', !otp, otp),
+        Container(
+          width: 16,
+          height: 2,
+          margin: const EdgeInsets.symmetric(horizontal: 6),
+          color: otp ? brandPrimary : borderColor,
+        ),
+        dot('2', 'OTP', otp, false),
+      ],
     );
   }
+}
+
+class _Banner extends StatelessWidget {
+  final String text;
+  final Color color;
+  final IconData icon;
+  const _Banner(this.text, this.color, this.icon);
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.only(bottom: 14),
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: .08),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: color.withValues(alpha: .25)),
+    ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: color, size: 20),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(text, style: TextStyle(color: color, height: 1.35)),
+        ),
+      ],
+    ),
+  );
 }

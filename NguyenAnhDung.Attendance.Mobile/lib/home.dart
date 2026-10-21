@@ -39,6 +39,13 @@ class _HomeScreenState extends State<HomeScreen> {
       Icons.description_outlined,
       Icons.admin_panel_settings_outlined,
     ];
+    const selectedIcons = [
+      Icons.space_dashboard_rounded,
+      Icons.qr_code_scanner_rounded,
+      Icons.history_rounded,
+      Icons.description_rounded,
+      Icons.admin_panel_settings_rounded,
+    ];
     final pages = [
       Dashboard(
         session: session,
@@ -80,38 +87,81 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           IconButton(
             tooltip: 'Tài khoản',
-            icon: const Icon(Icons.account_circle_outlined),
-            onPressed: () => showDialog<void>(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: Text(session.user!['fullName'].toString()),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(roleLabel(session.user!['role'])),
-                    const SizedBox(height: 8),
-                    Text(session.user!['email'].toString()),
-                    const SizedBox(height: 12),
-                    Text(
-                      'API: ${session.baseUrl}',
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ],
+            icon: CircleAvatar(
+              radius: 16,
+              backgroundColor: brandPrimary,
+              child: Text(
+                initials(session.user!['fullName']),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
                 ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Đóng'),
+              ),
+            ),
+            onPressed: () => showModalBottomSheet<void>(
+              context: context,
+              builder: (context) => SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircleAvatar(
+                        radius: 34,
+                        backgroundColor: brandPrimary,
+                        child: Text(
+                          initials(session.user!['fullName']),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        session.user!['fullName'].toString(),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: brandInk,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      StatusPill(roleLabel(session.user!['role'])),
+                      const SizedBox(height: 16),
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: const IconBadge(Icons.email_outlined, size: 40),
+                        title: Text(session.user!['email'].toString()),
+                        subtitle: const Text('Email'),
+                      ),
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: const IconBadge(Icons.dns_outlined, size: 40),
+                        title: Text(session.baseUrl),
+                        subtitle: const Text('Máy chủ API'),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.tonalIcon(
+                          style: FilledButton.styleFrom(
+                            foregroundColor: Colors.red.shade700,
+                            backgroundColor: Colors.red.shade50,
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+                            session.logout();
+                          },
+                          icon: const Icon(Icons.logout_rounded),
+                          label: const Text('Đăng xuất'),
+                        ),
+                      ),
+                    ],
                   ),
-                  FilledButton.tonal(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      session.logout();
-                    },
-                    child: const Text('Đăng xuất'),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -156,6 +206,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 labels.length,
                 (i) => NavigationDestination(
                   icon: Icon(icons[i]),
+                  selectedIcon: Icon(selectedIcons[i], color: brandDeep),
                   label: labels[i],
                 ),
               ),
@@ -198,29 +249,99 @@ class Dashboard extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            SectionTitle(
-              'Xin chào, ${session.user!['fullName']}',
-              subtitle:
-                  '${roleLabel(session.user!['role'])} • ${displayDate(dateOnly(businessNow()))}',
+            Padding(
+              padding: const EdgeInsets.only(bottom: 18),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 26,
+                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                    child: Text(
+                      initials(session.user!['fullName']),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        color: brandDeep,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Xin chào, ${session.user!['fullName']}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            color: brandInk,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${roleLabel(session.user!['role'])} • ${displayDate(dateOnly(businessNow()))}',
+                          style: const TextStyle(color: brandMuted),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF1647CA), Color(0xFF537FF0)],
-                ),
-                borderRadius: BorderRadius.circular(24),
+                gradient: brandGradient,
+                borderRadius: BorderRadius.circular(26),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x402455D6),
+                    blurRadius: 24,
+                    offset: Offset(0, 12),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'CA LÀM HÔM NAY',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12,
-                      letterSpacing: 1.6,
-                    ),
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'CA LÀM HÔM NAY',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 1.6,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white24,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          status == 'Working'
+                              ? '● Đang làm'
+                              : status == 'Completed'
+                              ? '✓ Hoàn tất'
+                              : '○ Chưa vào ca',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 12),
                   Text(
@@ -232,20 +353,42 @@ class Dashboard extends StatelessWidget {
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const SizedBox(height: 14),
-                  Text(
-                    'Giờ vào: ${localTime(summary['checkedInAtUtc'])}     Giờ ra: ${localTime(summary['checkedOutAtUtc'])}',
-                    style: const TextStyle(color: Colors.white),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      _timeTile(
+                        'Giờ vào',
+                        localTime(summary['checkedInAtUtc']),
+                        Icons.login_rounded,
+                      ),
+                      const SizedBox(width: 10),
+                      _timeTile(
+                        'Giờ ra',
+                        localTime(summary['checkedOutAtUtc']),
+                        Icons.logout_rounded,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 20),
-                  FilledButton.tonalIcon(
-                    onPressed: onAttendance,
-                    icon: const Icon(Icons.qr_code_scanner),
-                    label: Text(
-                      status == 'Working' ? 'Chấm công ra' : 'Mở chấm công',
+                  const SizedBox(height: 18),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: brandDeep,
+                      ),
+                      onPressed: status == 'Completed' ? null : onAttendance,
+                      icon: const Icon(Icons.qr_code_scanner),
+                      label: Text(
+                        status == 'Working'
+                            ? 'Chấm công ra'
+                            : status == 'Completed'
+                            ? 'Hẹn gặp lại ngày mai'
+                            : 'Mở chấm công',
+                      ),
                     ),
                   ),
                 ],
@@ -388,20 +531,58 @@ class Dashboard extends StatelessWidget {
   ) => SizedBox(
     width: available >= 800 ? (available - 36) / 4 : (available - 12) / 2,
     child: Card(
+      margin: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: color),
-            const SizedBox(height: 12),
+            IconBadge(icon, color: color, size: 40),
+            const SizedBox(height: 14),
             Text(
               value,
-              style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w800),
+              style: const TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.w800,
+                color: brandInk,
+              ),
             ),
-            Text(label, style: const TextStyle(color: Colors.blueGrey)),
+            Text(label, style: const TextStyle(color: brandMuted)),
           ],
         ),
+      ),
+    ),
+  );
+
+  Widget _timeTile(String label, String value, IconData icon) => Expanded(
+    child: Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: .14),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white, size: 20),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+              Text(
+                value,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     ),
   );
